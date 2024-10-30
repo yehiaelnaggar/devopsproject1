@@ -1,0 +1,22 @@
+---
+- name: Deploy Docker Nginx Web App
+  hosts: web
+  tasks:
+    - name: Ensure Docker service is running
+      service:
+        name: docker
+        state: started
+
+    - name: Build Docker image
+      docker_image:
+        path: /home/yehia/devopsproject1  # Path to the directory containing your Dockerfile
+        name: yehiaelnaggar/my-nginx-webapp
+        tag: latest
+
+    - name: Run Docker container
+      docker_container:
+        name: my-nginx-webapp
+        image: yehiaelnaggar/my-nginx-webapp:latest
+        state: started
+        ports:
+          - "8080:80"
