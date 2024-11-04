@@ -1,0 +1,34 @@
+---
+- name: Manage Docker Container and Image
+  hosts: localhost
+  tasks:
+    - name: Stop the running container if it exists
+      command: docker stop my-nginx-webapp
+      register: stop_result
+      ignore_errors: yes
+
+    - name: Remove the container if it exists
+      command: docker rm my-nginx-webapp
+      when: stop_result.rc == 0
+      ignore_errors: yes
+
+    - name: Remove the old image by ID
+      command: docker rmi 48790209fb20
+      ignore_errors: yes
+
+    - name: Check if Dockerfile exists
+      stat:
+        path: Dockerfile
+      register: dockerfile_check
+
+    - name: Build the new Docker image
+      command: docker build -t my-new-image .
+      when: dockerfile_check.stat.exists
+
+    - name: Tag the new image
+      command: docker tag my-new-image yehiaelnaggar/my-new-repo
+      when: dockerfile_check.stat.exists
+
+    - name: Push the new image to Docker Hub
+      command: docker push yehiaelnaggar/my-new-repo
+      when: dockerfile_check.stat.exists
